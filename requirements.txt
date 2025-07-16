@@ -1,1 +1,4 @@
-testfgd
+fastapi
+uvicorn
+opencv-python
+jinja2
