@@ -1,10 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Live Webcam</title>
+    <title>Live Kameras</title>
+    <script src="/static/js/app.js" defer></script>
 </head>
 <body>
-    <h1>Live-Stream von der Webcam</h1>
-    <img src="/video" width="640" height="480">
+    <h1>Live-Kamera-Streams</h1>
+    <form id="addForm">
+        Kamera-ID: <input type="text" id="cam_id">
+        Quelle (z.B. /dev/video0 oder rtsp://...): <input type="text" id="source">
+        <button type="submit">Hinzufügen</button>
+    </form>
+    <div id="streams"></div>
 </body>
 </html>
