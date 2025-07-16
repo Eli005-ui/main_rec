@@ -1,7 +1,14 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import StreamingResponse
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-import cv2
+from fastapi.requests import Request
+from routes.video_routes import router
 
 app = FastAPI()
-templates = Jinja2Templates(directory="webcontent")
+app.include_router(router)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
+
+@app.get("/")
+def index(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
