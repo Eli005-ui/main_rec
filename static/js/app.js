@@ -24,10 +24,10 @@ async function loadCameras() {
         // Bild-Element
         const img = document.createElement("img");
         img.src = `/video/${cam_id}?t=${Date.now()}`; // Cache-Busting
-        img.width = 640;
-        img.height = 480;
+        img.width = 320;
+        img.height = 240;
         
-        
+
         // Button-Container
         const controls = document.createElement("div");
         controls.className = "stream-controls";
