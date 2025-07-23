@@ -30,6 +30,7 @@ def remove_camera(cam_id: str):
 
 @router.post("/reload_camera")
 def reload_camera(cam_id: str, source: str):
+    print(source)
     # 1. Kamera entfernen
     manager.remove_camera(cam_id)
     # 2. Neu hinzufügen
