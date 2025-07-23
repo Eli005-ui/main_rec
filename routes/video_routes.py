@@ -8,9 +8,8 @@ manager = CameraManager()
 
 @router.get("/video/{cam_id}")
 def stream_video(cam_id: str):
-    cap = manager.get_camera(cam_id)
-    if cap:
-        return StreamingResponse(generate_frames(cap),
+    if cam_id in manager.list_cameras():
+        return StreamingResponse(generate_frames(manager, cam_id),
                                  media_type="multipart/x-mixed-replace; boundary=frame")
     return JSONResponse(status_code=404, content={"error": "Camera not found"})
 
