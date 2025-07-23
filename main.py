@@ -6,7 +6,7 @@ from routes.video_routes import router
 
 app = FastAPI()
 app.include_router(router)
-app.mount("/static", StaticFiles(directory="static"), name="static", headers={"Cache-Control": "no-cache"})
+app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 
