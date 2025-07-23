@@ -2,7 +2,9 @@ document.getElementById("addForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const cam_id = document.getElementById("cam_id").value;
     const source = document.getElementById("source").value;
-    const res = await fetch(`/add_camera?cam_id=${cam_id}&source=${encodeURIComponent(source)}`, { method: "POST" });
+    const res = await fetch(`/add_camera?cam_id=${cam_id}&source=${encodeURIComponent(source)}`, { 
+        method: "POST" 
+    });
     if (res.ok) {
         loadCameras();
     } else {
@@ -17,82 +19,70 @@ async function loadCameras() {
     container.innerHTML = "";
 
     cams.forEach(cam_id => {
-        // Container für den Stream
         const streamContainer = document.createElement("div");
         streamContainer.className = "stream-container";
-        streamContainer.id = cam_id;  // Wichtig für die reload-Funktion
+        streamContainer.id = cam_id;
 
-        // Loader (wird während Neuladen angezeigt)
+        // Loader
         const loader = document.createElement("div");
         loader.className = "loader";
         loader.style.display = "none";
-        loader.innerHTML = "Lädt...";
-        
-        // Bild-Element
+        loader.textContent = "Lädt...";
+
+        // Image
         const img = document.createElement("img");
         img.src = `/video/${cam_id}?t=${Date.now()}`;
         img.width = 640;
         img.height = 480;
 
-        // Control-Buttons
+        // Delete Button
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "×";
+        deleteBtn.title = "Löschen";
+        deleteBtn.addEventListener("click", async () => {
+            if (confirm("Kamera wirklich löschen?")) {
+                const res = await fetch(`/remove_camera?cam_id=${cam_id}`, { 
+                    method: "POST" 
+                });
+                if (res.ok) loadCameras();
+            }
+        });
+
+        // Reload Button
+        const reloadBtn = document.createElement("button");
+        reloadBtn.textContent = "↻";
+        reloadBtn.title = "Neu laden";
+        reloadBtn.addEventListener("click", async () => {
+            const source = prompt("Kameraquelle neu eingeben", document.getElementById("source").value);
+            if (source) {
+                showLoader(cam_id, true);
+                try {
+                    const res = await fetch(`/reload_camera?cam_id=${cam_id}&source=${encodeURIComponent(source)}`, {
+                        method: "POST"
+                    });
+                    if (res.ok) {
+                        img.src = `/video/${cam_id}?t=${Date.now()}`;
+                    } else {
+                        alert("Neuladen fehlgeschlagen");
+                    }
+                } catch (error) {
+                    console.error("Fehler:", error);
+                    alert("Fehler beim Neuladen");
+                } finally {
+                    showLoader(cam_id, false);
+                }
+            }
+        });
+
+        // Controls Container
         const controls = document.createElement("div");
         controls.className = "stream-controls";
-        controls.innerHTML = `
-            <button title="Löschen" onclick="deleteCamera('${cam_id}')">×</button>
-            <button title="Neu laden" onclick="reloadCameraPrompt('${cam_id}')">↻</button>
-        `;
+        controls.append(deleteBtn, reloadBtn);
 
-        streamContainer.appendChild(loader);
-        streamContainer.appendChild(img);
-        streamContainer.appendChild(controls);
+        streamContainer.append(loader, img, controls);
         container.appendChild(streamContainer);
     });
 }
-
-async function deleteCamera(cam_id) {
-    const res = await fetch(`/remove_camera?cam_id=${cam_id}`, { method: "POST" });
-    if (res.ok) {
-        loadCameras(); // UI aktualisieren
-    } else {
-        alert("Fehler beim Löschen");
-    }
-}
-
-async function reloadCamera(cam_id, source) {
-    try {
-        // 1. Kamera im Backend neu laden
-        const res = await fetch(`/reload_camera?cam_id=${cam_id}&source=${encodeURIComponent(source)}`, {
-            method: "POST"
-        });
-        
-        if (!res.ok) throw new Error("Reload failed");
-        
-        // 2. Stream im UI aktualisieren
-        const img = document.querySelector(`img[src^="/video/${cam_id}"]`);
-        if (img) {
-            img.src = `/video/${cam_id}?t=${Date.now()}`;
-        }
-    } catch (error) {
-        console.error("Reload error:", error);
-        alert("Neuladen fehlgeschlagen");
-    }
-}
-
-// Globale Funktionen für die Button-Event-Handler
-window.deleteCamera = async function(cam_id) {
-    if (!confirm("Kamera wirklich löschen?")) return;
-    const res = await fetch(`/remove_camera?cam_id=${cam_id}`, { method: "POST" });
-    if (res.ok) loadCameras();
-};
-
-window.reloadCameraPrompt = async function(cam_id) {
-    const source = prompt("Kameraquelle neu eingeben", document.getElementById("source").value);
-    if (source) {
-        showLoader(cam_id, true);
-        await reloadCamera(cam_id, source);
-        showLoader(cam_id, false);
-    }
-};
 
 function showLoader(cam_id, show) {
     const container = document.getElementById(cam_id);
@@ -101,4 +91,5 @@ function showLoader(cam_id, show) {
     }
 }
 
+// Initial load
 loadCameras();
