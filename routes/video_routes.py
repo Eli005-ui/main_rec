@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse, JSONResponse
 from camera.manager import CameraManager
 from camera.streamer import generate_frames
+import time
 
 router = APIRouter()
 manager = CameraManager()
@@ -23,17 +24,35 @@ def add_camera(cam_id: str, source: str):
 def list_cameras():
     return manager.list_cameras()
 
-@router.post("/remove_camera")
-def remove_camera(cam_id: str):
-    manager.remove_camera(cam_id)
-    return {"status": "removed"}
+def remove_camera(self, cam_id: str):
+    if cam_id in self.cameras:
+        cam = self.cameras.pop(cam_id)
+        # Zuerst den Thread stoppen
+        if cam["thread"] is not None:
+            cam["thread"].join(timeout=1)  # 1 Sekunde Wartezeit
+        
+        # Dann die Kamera freigeben
+        cam["cap"].release()
+        
+        # Puffer leeren
+        cam["buffer"].clear()
 
 @router.post("/reload_camera")
 def reload_camera(cam_id: str, source: str):
-    print(source)
-    # 1. Kamera entfernen
-    manager.remove_camera(cam_id)
-    # 2. Neu hinzufügen
-    if manager.add_camera(cam_id, source):
-        return {"status": "reloaded"}
-    return JSONResponse(status_code=400, content={"error": "Reload failed"})
+    try:
+        # Bestehende Kamera sicher entfernen
+        manager.remove_camera(cam_id)
+        
+        # Kleine Verzögerung für sauberen Reset
+        time.sleep(2)
+        
+        # Neue Kamera hinzufügen
+        if manager.add_camera(cam_id, source):
+            return {"status": "reloaded"}
+        return JSONResponse(status_code=400, content={"error": "Add failed after reload"})
+    
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"Reload crashed: {str(e)}"}
+        )
