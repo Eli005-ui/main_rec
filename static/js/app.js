@@ -85,8 +85,8 @@ window.deleteCamera = async function(cam_id) {
     if (res.ok) loadCameras();
 };
 
-window.reloadCameraPrompt = async function(cam_id) {
-    const source = prompt("Kameraquelle neu eingeben", "/dev/video0");
+window.reloadCamera = async function(cam_id) {
+    const source = prompt("Kameraquelle neu eingeben", document.getElementById("source").value);
     if (source) {
         showLoader(cam_id, true);
         await reloadCamera(cam_id, source);
