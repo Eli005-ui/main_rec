@@ -24,6 +24,7 @@ def add_camera(cam_id: str, source: str):
 def list_cameras():
     return manager.list_cameras()
 
+@router.post("/remove_camera")
 def remove_camera(self, cam_id: str):
     if cam_id in self.cameras:
         cam = self.cameras.pop(cam_id)
