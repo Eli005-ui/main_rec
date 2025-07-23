@@ -22,3 +22,8 @@ def add_camera(cam_id: str, source: str):
 @router.get("/list_cameras")
 def list_cameras():
     return manager.list_cameras()
+
+@router.post("/remove_camera")
+def remove_camera(cam_id: str):
+    manager.remove_camera(cam_id)
+    return {"status": "removed"}

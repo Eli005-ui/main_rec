@@ -24,8 +24,8 @@ async function loadCameras() {
         // Bild-Element
         const img = document.createElement("img");
         img.src = `/video/${cam_id}?t=${Date.now()}`; // Cache-Busting
-        img.width = 480;
-        img.height = 360;
+        img.width = 320;
+        img.height = 240;
         
 
         // Button-Container
