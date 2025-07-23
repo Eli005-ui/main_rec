@@ -27,3 +27,12 @@ def list_cameras():
 def remove_camera(cam_id: str):
     manager.remove_camera(cam_id)
     return {"status": "removed"}
+
+@router.post("/reload_camera")
+def reload_camera(cam_id: str, source: str):
+    # 1. Kamera entfernen
+    manager.remove_camera(cam_id)
+    # 2. Neu hinzufügen
+    if manager.add_camera(cam_id, source):
+        return {"status": "reloaded"}
+    return JSONResponse(status_code=400, content={"error": "Reload failed"})
